@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kronika Zbrodni - Dzisiaj w Historii</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        crime: {
+                            900: '#0a0a0c',
+                            800: '#121216',
+                            700: '#1a1a22',
+                            accent: '#dc2626',
+                            accentHover: '#b91c1c',
+                            darkRed: '#450a0a',
+                            gold: '#d97706'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #0a0a0c;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+        }
+        .police-tape {
+            background: repeating-linear-gradient(
+                -45deg,
+                #000,
+                #000 15px,
+                #fbbf24 15px,
+                #fbbf24 30px
+            );
+        }
+        .crimson-glow {
+            box-shadow: 0 0 25px rgba(220, 38, 38, 0.25);
+        }
+        .crimson-border-glow:focus {
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #121216;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a35;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-red-900 selection:text-white">
+
+    <!-- Header / Banner -->
+    <header class="relative bg-crime-800 border-b border-red-950/60 overflow-hidden">
+        <!-- Crime tape accent line -->
+        <div class="h-2 police-tape w-full opacity-80"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="p-3 bg-red-950/60 border border-red-800/40 rounded-xl text-red-500 crimson-glow">
+                        <i class="fa-solid font-bold fa-fingerprint text-4xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-serif flex items-center gap-2">
+                            KRONIKA ZBRODNI
+                        </h1>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-1">
+                            Archiwum Spraw Kryminalnych i Polskich Podcastów True Crime
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right Action Buttons -->
+                <div class="flex items-center space-x-3">
+                    <button id="btnFavorites" onclick="toggleFavoritesModal()" class="px-4 py-2 bg-crime-700 hover:bg-crime-900 border border-gray-700/60 rounded-lg text-sm text-gray-300 hover:text-white transition flex items-center gap-2">
+                        <i class="fa-solid fa-bookmark text-red-500"></i>
+                        <span>Zapisane (<span id="favCount">0</span>)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Search & Control Panel -->
+        <section class="bg-crime-800 border border-gray-800/80 rounded-2xl p-6 mb-8 shadow-xl">
+            <form id="searchForm" class="flex flex-col md:flex-row items-end gap-4">
+                
+                <!-- Date Selector -->
+                <div class="w-full md:w-1/3">
+                    <label for="searchDate" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-2">
+                        <i class="fa-regular fa-calendar-days text-red-500"></i> Wybierz Datę Zbrodni
+                    </label>
+                    <input type="date" id="searchDate" 
+                        class="w-full bg-crime-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-red-600 crimson-border-glow transition">
+                </div>
+
+                <!-- Custom Filter / Category optional -->
+                <div class="w-full md:w-1/3">
+                    <label for="filterType" class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-red-500"></i> Region / Zakres
+                    </label>
+                    <select id="filterType" class="w-full bg-crime-900 border border-gray-700 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-red-600 transition">
+                        <option value="all">Polska i Świat (Wszystkie)</option>
+                        <option value="poland">Priorytet: Polska</option>
+                        <option value="world">Światowe głośne sprawy</option>
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="w-full md:w-1/3">
+                    <button type="submit" id="btnSearch" class="w-full bg-crime-accent hover:bg-crime-accentHover text-white font-bold py-3 px-6 rounded-xl transition flex items-center justify-center gap-2 shadow-lg hover:shadow-red-900/40">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Odkryj Karty Historii</span>
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-4 flex flex-wrap gap-2 items-center text-xs text-gray-400">
+                <span class="text-gray-500">Szybki wybór:</span>
+                <button onclick="setQuickDate('today')" class="px-2.5 py-1 bg-crime-700 hover:bg-gray-700 rounded-md text-gray-300">Dzisiaj</button>
+                <button onclick="setQuickDate('yesterday')" class="px-2.5 py-1 bg-crime-700 hover:bg-gray-700 rounded-md text-gray-300">Wczoraj</button>
+                <button onclick="setQuickDate('random')" class="px-2.5 py-1 bg-crime-700 hover:bg-gray-700 rounded-md text-gray-300"><i class="fa-solid fa-shuffle mr-1"></i> Losowy dzień</button>
+            </div>
+        </section>
+
+        <!-- Status & Loader -->
+        <section id="statusContainer" class="hidden mb-8">
+            <div class="bg-crime-800/90 border border-red-900/40 rounded-2xl p-8 text-center flex flex-col items-center justify-center space-y-4">
+                <div class="relative w-16 h-16 flex items-center justify-center">
+                    <div class="absolute inset-0 border-4 border-red-900/30 border-t-red-600 rounded-full animate-spin"></div>
+                    <i class="fa-solid fa-mask text-2xl text-red-500"></i>
+                </div>
+                <div>
+                    <h3 id="statusTitle" class="text-lg font-bold text-white">Przeszukiwanie archiwów policyjnych i prasowych...</h3>
+                    <p id="statusDesc" class="text-xs text-gray-400 mt-1">Model Gemini bada historię pod kątem zbrodni z wybranego dnia oraz szuka polskich podcastów...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Area -->
+        <section id="resultsContainer">
+            <!-- Dynamic Content injected here -->
+            <div id="welcomeState" class="bg-crime-800/50 border border-gray-800 rounded-2xl p-12 text-center">
+                <div class="max-w-md mx-auto space-y-4">
+                    <div class="w-16 h-16 bg-crime-700/50 rounded-full flex items-center justify-center mx-auto text-red-500">
+                        <i class="fa-solid fa-book-skull text-3xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-white">Wybierz datę i rozpocznij dochodzenie</h2>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Aplikacja przeszuka bazę wiedzy i polski internet pod kątem spraw kryminalnych, które wydarzyły się danego dnia. Odnajdzie również audycje podcastowe (np. Kryminatorium, Piąte: Nie Zabijaj) lub prasową bibliografię.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Zapisanych Spraw -->
+    <div id="favModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-crime-800 border border-gray-700 w-full max-w-2xl rounded-2xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center pb-4 border-b border-gray-700">
+                <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-red-500"></i> Zapisane Sprawy
+                </h3>
+                <button onclick="toggleFavoritesModal()" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div id="favList" class="flex-grow overflow-y-auto py-4 space-y-3">
+                <!-- Fav items injected via JS -->
+            </div>
+
+            <div class="pt-4 border-t border-gray-700 flex justify-end">
+                <button onclick="clearAllFavorites()" class="px-4 py-2 bg-red-950/60 hover:bg-red-900 text-red-300 text-xs font-semibold rounded-lg border border-red-800/50 transition">
+                    Wyszczyść Historię
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-crime-900 border-t border-gray-800 py-6 text-center text-xs text-gray-500">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>© 2026 Kronika Zbrodni. Projekt zasilany przez Gemini API z Google Search Grounding.</p>
+            <p class="flex items-center gap-1">
+                <i class="fa-solid fa-headphones text-red-500"></i> Preferowane polskie audycje True Crime
+            </p>
+        </div>
+    </footer>
+
+    <!-- App Logic -->
+    <script>
+        // Store user favorites in LocalStorage
+        let favorites = JSON.parse(localStorage.getItem('crime_favs') || '[]');
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default date to TODAY
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDay() === 0 ? today.getDate() : today.getDate()).padStart(2, '0');
+            
+            const formattedDate = `${year}-${month}-${day}`;
+            document.getElementById('searchDate').value = formattedDate;
+
+            updateFavCount();
+
+            // Handle form submission
+            document.getElementById('searchForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const selectedDateVal = document.getElementById('searchDate').value;
+                if (!selectedDateVal) return;
+                
+                const [y, m, d] = selectedDateVal.split('-');
+                fetchCrimeData(m, d);
+            });
+        });
+
+        // Quick date picker helper
+        function setQuickDate(type) {
+            const dateInput = document.getElementById('searchDate');
+            const now = new Date();
+            
+            if (type === 'today') {
+                // leave as is
+                dateInput.valueAsDate = now;
+            } else if (type === 'yesterday') {
+                now.setDate(now.getDate() - 1);
+                dateInput.valueAsDate = now;
+            } else if (type === 'random') {
+                const randomMonth = Math.floor(Math.random() * 12);
+                const randomDay = Math.floor(Math.random() * 28) + 1;
+                now.setMonth(randomMonth);
+                now.setDate(randomDay);
+                dateInput.valueAsDate = now;
+            }
+        }
+
+        // Favorites functionality
+        function updateFavCount() {
+            document.getElementById('favCount').innerText = favorites.length;
+        }
+
+        function toggleFavoritesModal() {
+            const modal = document.getElementById('favModal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                renderFavorites();
+            }
+        }
+
+        function saveToFavorites(title, dateStr, summary) {
+            const item = { id: Date.now(), title, dateStr, summary };
+            if (!favorites.some(f => f.title === title)) {
+                favorites.push(item);
+                localStorage.setItem('crime_favs', JSON.stringify(favorites));
+                updateFavCount();
+                alertBox('Zapisano sprawę do zakładki Ulubione!');
+            } else {
+                alertBox('Ta sprawa znajduje się już w ulubionych.');
+            }
+        }
+
+        function removeFavorite(id) {
+            favorites = favorites.filter(f => f.id !== id);
+            localStorage.setItem('crime_favs', JSON.stringify(favorites));
+            updateFavCount();
+            renderFavorites();
+        }
+
+        function clearAllFavorites() {
+            if (confirm('Czy na pewno chcesz usunąć wszystkie zapisane sprawy?')) {
+                favorites = [];
+                localStorage.setItem('crime_favs', JSON.stringify(favorites));
+                updateFavCount();
+                renderFavorites();
+            }
+        }
+
+        function renderFavorites() {
+            const container = document.getElementById('favList');
+            if (favorites.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-6">Brak zapisanych spraw w pamięci.</p>`;
+                return;
+            }
+
+            container.innerHTML = favorites.map(fav => `
+                <div class="bg-crime-900 border border-gray-700/80 rounded-xl p-4 flex justify-between items-start gap-4">
+                    <div>
+                        <span class="text-xs font-semibold text-red-500">${fav.dateStr}</span>
+                        <h4 class="text-base font-bold text-white mt-0.5">${escapeHtml(fav.title)}</h4>
+                        <p class="text-xs text-gray-400 line-clamp-2 mt-1">${escapeHtml(fav.summary)}</p>
+                    </div>
+                    <button onclick="removeFavorite(${fav.id})" class="text-gray-500 hover:text-red-500 p-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Custom notification/alert instead of window.alert
+        function alertBox(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-5 right-5 bg-crime-accent text-white px-4 py-3 rounded-xl shadow-2xl z-50 text-sm font-semibold flex items-center gap-2 border border-red-400 animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${escapeHtml(msg)}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+            });
+        }
+
+        // FETCH DATA FROM GEMINI API
+        async function fetchCrimeData(month, day) {
+            const statusContainer = document.getElementById('statusContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const filterType = document.getElementById('filterType').value;
+
+            // Show Loading
+            statusContainer.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+
+            const monthNamesPL = [
+                'stycznia', 'lutego', 'marca', 'kwietnia', 'maja', 'czerwca',
+                'lipca', 'sierpnia', 'września', 'października', 'listopada', 'grudnia'
+            ];
+            const monthName = monthNamesPL[parseInt(month, 10) - 1];
+            const dayNum = parseInt(day, 10);
+            const dateFormatted = `${dayNum} ${monthName}`;
+
+            // Prepare Prompt
+            let regionPrompt = "Szukaj wydarzeń kryminalnych z całego świata ze szczególnym uwzględnieniem Polski.";
+            if (filterType === 'poland') {
+                regionPrompt = "Skup się wyłącznie na polskich sprawach kryminalnych (PRL, III RP, historia dawniejsza).";
+            } else if (filterType === 'world') {
+                regionPrompt = "Skup się na najbardziej głośnych światowych sprawach kryminalnych.";
+            }
+
+            const systemPrompt = `Jesteś ekspertem i dziennikarzem śledczym specjalizującym się w tematyce True Crime (historia zbrodni, tajemnicze morderstwa, sprawy kryminalne). Twój styl wypowiedzi jest mroczny, rzeczowy, pozbawiony taniej sensacji, ale bardzo wciągający i rzetelny. Zawsze odpowiadaj w strukturze JSON.`;
+
+            const userPrompt = `Znajdź głośne lub historyczne sprawy kryminalne, morderstwa, zamachy lub niewyjaśnione zbrodnie, które miały miejsce w dniu: ${dateFormatted} (dowolnego roku).
+
+${regionPrompt}
+
+Wymagane jest wyszukanie informacji w internecie przy użyciu wyszukiwarki. DLA KAŻDEJ ZBRODNI postaraj się odnaleźć:
+1. Nazwę i datę zbrodni (rok, miejsce).
+2. Szczegółowe podsumowanie sprawy (tło, przebieg, śledztwo, wyrok/status).
+3. POLSKIE PODCASTY True Crime (np. "Kryminatorium", "Piąte: Nie Zabijaj", "Zbrodnie z Archiwum X", "Drama Queen", "Zbrodnia bez kary", "Inna Strona Świata" itp.), w których omówiono tę konkretną sprawę lub podaj link do odcinka/platformy.
+4. JEŚLI BRAK POLSKIEGO PODCASTU na ten temat: podaj bibliografię, artykuły prasowe, książki lub źródła internetowe opisujące tę sprawę.
+
+Zwróć odpowiedź WYŁĄCZNIE jako czysty JSON w następującym formacie:
+{
+  "dateLabel": "${dateFormatted}",
+  "cases": [
+    {
+      "title": "Tytuł zbrodni / nazwa sprawy",
+      "year": "Rok (np. 1994)",
+      "location": "Miejsce (np. Kraków, Polska)",
+      "summary": "Szczegółowy opis zbrodni...",
+      "investigation": "Przebieg śledztwa, ujawnienie sprawcy, wyrok...",
+      "podcasts": [
+        {
+          "name": "Nazwa podcastu (np. Kryminatorium)",
+          "episodeTitle": "Tytuł odcinka (jeśli znany)",
+          "platformUrl": "Link lub nazwa serwisu (np. Spotify / YouTube)",
+          "isPolish": true
+        }
+      ],
+      "sources": [
+        {
+          "title": "Tytuł artykułu lub książki",
+          "url": "Link lub odniesienie bibliograficzne"
+        }
+      ]
+    }
+  ]
+}`;
+
+            const apiKey = ""; // Canvas dynamically injects API key if empty
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                }
+            };
+
+            // Fetch with exponential backoff handling
+            try {
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                statusContainer.classList.add('hidden');
+
+                const candidate = data.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const rawText = candidate.content.parts[0].text;
+                    
+                    // Extract Grounding Sources if available
+                    let webAttributions = [];
+                    if (candidate.groundingMetadata?.groundingAttributions) {
+                        webAttributions = candidate.groundingMetadata.groundingAttributions
+                            .map(attr => ({
+                                uri: attr.web?.uri,
+                                title: attr.web?.title
+                            }))
+                            .filter(src => src.uri && src.title);
+                    }
+
+                    renderResults(rawText, dateFormatted, webAttributions);
+                } else {
+                    showError("Nie udało się odnaleźć spraw dla tej daty. Spróbuj wybrać inny dzień.");
+                }
+            } catch (err) {
+                console.error(err);
+                statusContainer.classList.add('hidden');
+                showError("Wystąpił błąd podczas połączenia z serwerem archiwum. Spróbuj ponownie za chwilę.");
+            }
+        }
+
+        // Retry wrapper for API calls
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const res = await fetch(url, options);
+                    if (res.ok) return res;
+                } catch (e) {
+                    if (i === retries - 1) throw e;
+                }
+                await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+            }
+            return fetch(url, options);
+        }
+
+        // Render Cases into UI
+        function renderResults(rawResponse, dateLabel, groundingSources) {
+            const container = document.getElementById('resultsContainer');
+
+            let parsedData = null;
+            try {
+                // Sanitize JSON markdown block if present
+                const cleanJson = rawResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+                parsedData = JSON.parse(cleanJson);
+            } catch (e) {
+                console.warn("Could not parse direct JSON, fallback to text format.", e);
+            }
+
+            if (!parsedData || !parsedData.cases || parsedData.cases.length === 0) {
+                // If JSON fails, render structured fallback
+                container.innerHTML = `
+                    <div class="bg-crime-800 border border-gray-800 rounded-2xl p-6">
+                        <h2 class="text-xl font-bold text-white mb-4">Wyniki dla dnia ${dateLabel}</h2>
+                        <div class="prose prose-invert max-w-none text-gray-300 whitespace-pre-line leading-relaxed">
+                            ${escapeHtml(rawResponse)}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-3">
+                        <span class="w-3 h-8 bg-red-600 rounded-full inline-block"></span>
+                        Kartoteka: Zbrodnie z dnia ${dateLabel}
+                    </h2>
+                    <span class="text-xs text-gray-400 bg-crime-800 px-3 py-1.5 rounded-lg border border-gray-700">
+                        Znaleziono spraw: ${parsedData.cases.length}
+                    </span>
+                </div>
+                <div class="space-y-8">
+            `;
+
+            parsedData.cases.forEach((crime, idx) => {
+                const podcastsList = crime.podcasts || [];
+                const sourcesList = crime.sources || [];
+                const hasPodcasts = podcastsList.length > 0;
+
+                html += `
+                    <article class="bg-crime-800 border border-gray-800 hover:border-red-950/80 rounded-2xl p-6 sm:p-8 transition-all shadow-xl">
+                        <!-- Top Header -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-700/60 pb-4 mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 text-xs font-semibold text-red-500 uppercase tracking-wider mb-1">
+                                    <span><i class="fa-solid fa-calendar-day mr-1"></i> ${crime.year || 'Brak roku'}</span>
+                                    <span>•</span>
+                                    <span><i class="fa-solid fa-location-dot mr-1"></i> ${escapeHtml(crime.location || 'Nieokreślone')}</span>
+                                </div>
+                                <h3 class="text-xl sm:text-2xl font-bold text-white font-serif">${escapeHtml(crime.title)}</h3>
+                            </div>
+                            <button onclick="saveToFavorites('${escapeHtml(crime.title)}', '${dateLabel} (${crime.year})', '${escapeHtml(crime.summary)}')" 
+                                class="self-start sm:self-center px-3 py-1.5 bg-crime-700 hover:bg-crime-900 border border-gray-700 rounded-lg text-xs text-gray-300 hover:text-red-400 transition flex items-center gap-1.5">
+                                <i class="fa-regular fa-bookmark"></i> Zapisz
+                            </button>
+                        </div>
+
+                        <!-- Summary & Details -->
+                        <div class="space-y-4 mb-6">
+                            <div>
+                                <h4 class="text-xs font-semibold uppercase text-gray-400 mb-1">Opis wydarzenia</h4>
+                                <p class="text-sm text-gray-300 leading-relaxed">${escapeHtml(crime.summary)}</p>
+                            </div>
+                            ${crime.investigation ? `
+                                <div class="bg-crime-900/60 border border-gray-800 rounded-xl p-4">
+                                    <h4 class="text-xs font-semibold uppercase text-red-400 mb-1 flex items-center gap-1">
+                                        <i class="fa-solid fa-magnifying-glass"></i> Śledztwo i Finał
+                                    </h4>
+                                    <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">${escapeHtml(crime.investigation)}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Podcasts or Bibliography Section -->
+                        <div class="bg-crime-900/90 border border-gray-700/70 rounded-xl p-5">
+                            ${hasPodcasts ? `
+                                <h4 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-podcast text-red-500"></i> Polskie Podcasty True Crime
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    ${podcastsList.map(pod => `
+                                        <div class="bg-crime-800 border border-gray-700/50 rounded-lg p-3 flex items-start justify-between gap-2">
+                                            <div>
+                                                <span class="inline-block px-2 py-0.5 text-[10px] bg-red-950 text-red-400 border border-red-800 rounded mb-1">
+                                                    ${pod.isPolish ? 'Polski Podcast' : 'Podcast'}
+                                                </span>
+                                                <h5 class="text-xs font-bold text-white">${escapeHtml(pod.name)}</h5>
+                                                <p class="text-[11px] text-gray-400 line-clamp-1 mt-0.5">${escapeHtml(pod.episodeTitle || 'Odcinek poświęcony sprawie')}</p>
+                                            </div>
+                                            ${pod.platformUrl ? `
+                                                <a href="${escapeHtml(pod.platformUrl)}" target="_blank" rel="noopener noreferrer" 
+                                                   class="text-xs bg-crime-700 hover:bg-red-600 text-white p-2 rounded-md transition self-center">
+                                                    <i class="fa-solid fa-play"></i>
+                                                </a>
+                                            ` : `
+                                                <span class="text-xs text-gray-500 p-2"><i class="fa-solid fa-headphones"></i></span>
+                                            `}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div>
+                                    <h4 class="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                                        <i class="fa-solid fa-book text-amber-500"></i> Brak dedykowanego podcastu – Bibliografia i źródła
+                                    </h4>
+                                    <p class="text-xs text-gray-400 mb-3">Dla tej sprawy nie odnaleziono bezpośrednich audycji podcastowych w języku polskim. Oto materiały prasowe i naukowe:</p>
+                                    <ul class="space-y-1.5">
+                                        ${sourcesList.map(src => `
+                                            <li class="text-xs text-gray-300 flex items-center gap-2">
+                                                <i class="fa-solid fa-arrow-right text-red-500 text-[10px]"></i>
+                                                ${src.url && src.url.startsWith('http') ? `
+                                                    <a href="${escapeHtml(src.url)}" target="_blank" class="hover:underline text-red-300 font-medium">${escapeHtml(src.title)}</a>
+                                                ` : `
+                                                    <span>${escapeHtml(src.title)} ${src.url ? `(${escapeHtml(src.url)})` : ''}</span>
+                                                `}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            `}
+                        </div>
+                    </article>
+                `;
+            });
+
+            // If Google Grounding sources present
+            if (groundingSources && groundingSources.length > 0) {
+                html += `
+                    <div class="mt-8 p-4 bg-crime-800/40 border border-gray-800 rounded-xl">
+                        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Źródła internetowe weryfikowane przez Google Search</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${groundingSources.map(src => `
+                                <a href="${escapeHtml(src.uri)}" target="_blank" class="text-xs bg-crime-900 hover:bg-crime-700 text-gray-300 px-3 py-1 rounded-md border border-gray-700 transition line-clamp-1 max-w-xs">
+                                    <i class="fa-solid fa-link text-red-500 mr-1"></i> ${escapeHtml(src.title)}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function showError(msg) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `
+                <div class="bg-red-950/40 border border-red-800/60 rounded-2xl p-6 text-center text-red-200">
+                    <i class="fa-solid fa-circle-exclamation text-3xl mb-2 text-red-500"></i>
+                    <h3 class="font-bold text-lg">Wystąpił problem</h3>
+                    <p class="text-sm mt-1 text-red-300">${escapeHtml(msg)}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
